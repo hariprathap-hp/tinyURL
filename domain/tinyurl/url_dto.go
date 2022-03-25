@@ -1,9 +1,9 @@
-package urls
+package tinyurl
 
 import (
 	"strconv"
 	"strings"
-	"test3/hariprathap-hp/system_design/TinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 	"time"
 )
 
@@ -14,6 +14,8 @@ type Url struct {
 	ExpirationDate time.Time `json:"expiration"`
 	UserID         string    `json:"user_id"`
 }
+
+type Urls []Url
 
 func (url *Url) Validate() *errors.RestErr {
 	url.OriginalURL = strings.TrimSpace(strings.ToLower(url.OriginalURL))

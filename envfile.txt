@@ -1,0 +1,6 @@
+export DRIVER=""
+export USER=""
+export PASSWORD=""
+export PORT=""
+export DBNAME=""
+export SSLMODE=""

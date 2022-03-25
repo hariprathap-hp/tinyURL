@@ -1,12 +1,12 @@
 package services
 
 import (
-	"test3/hariprathap-hp/system_design/TinyURL/domain/urls"
-	"test3/hariprathap-hp/system_design/TinyURL/utils/dateutils"
-	"test3/hariprathap-hp/system_design/TinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
+	"test3/hariprathap-hp/system_design/tinyURL/utils/dateutils"
+	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 )
 
-func CreateURL(url urls.Url) (*urls.Url, *errors.RestErr) {
+func CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) {
 	if validateErr := url.Validate(); validateErr != nil {
 		return nil, validateErr
 	}
@@ -19,4 +19,13 @@ func CreateURL(url urls.Url) (*urls.Url, *errors.RestErr) {
 		return nil, err
 	}
 	return &url, nil
+}
+
+func GetURL(id string) (tinyurl.Urls, *errors.RestErr) {
+	url := tinyurl.Url{}
+	result, getErr := url.List(id)
+	if getErr != nil {
+		return nil, getErr
+	}
+	return result, nil
 }
