@@ -22,8 +22,10 @@ func CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) {
 }
 
 func GetURL(id string) (tinyurl.Urls, *errors.RestErr) {
-	url := tinyurl.Url{}
-	result, getErr := url.List(id)
+	url := tinyurl.Url{
+		UserID: id,
+	}
+	result, getErr := url.List()
 	if getErr != nil {
 		return nil, getErr
 	}

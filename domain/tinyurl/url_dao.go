@@ -31,13 +31,13 @@ func (url *Url) Save() *errors.RestErr {
 	return nil
 }
 
-func (url *Url) List(userid string) (Urls, *errors.RestErr) {
+func (url *Url) List() (Urls, *errors.RestErr) {
 	stmt, err := urls_db.Client.Prepare(searchQuery)
 	if err != nil {
 		return nil, errors.NewInternalServerError("db query statement creation failed")
 	}
 	defer stmt.Close()
-	user_id, _ := strconv.Atoi(userid)
+	user_id, _ := strconv.Atoi(url.UserID)
 
 	rows, searchErr := stmt.Query(user_id)
 	if searchErr != nil {
