@@ -12,6 +12,7 @@ const (
 	indexUniqueUserID = "duplicate key value"
 	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
 	searchQuery       = "select hash,originalurl,creationdate,expirationdate from url where userid=$1"
+	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
 )
 
 func (url *Url) Save() *errors.RestErr {
@@ -58,4 +59,22 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 	}
 
 	return results, nil
+}
+
+func (url *Url) Delete() *errors.RestErr {
+	stmt, err := urls_db.Client.Prepare(deleteQuery)
+	if err != nil {
+		return errors.NewInternalServerError("db query statement creation failed")
+	}
+	defer stmt.Close()
+	user_id, _ := strconv.Atoi(url.UserID)
+	if _, deleteErr := stmt.Exec(user_id, url.OriginalURL); deleteErr != nil {
+		if strings.Contains(deleteErr.Error(), indexUniqueUserID) {
+			fmt.Println("violates unique constraint")
+			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
+		}
+		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", deleteErr.Error()))
+	}
+
+	return nil
 }
