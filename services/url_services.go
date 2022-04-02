@@ -1,10 +1,12 @@
 package services
 
 import (
+	"fmt"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/cryptoutils"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/dateutils"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+
+	"github.com/bwmarrin/snowflake"
 )
 
 var (
@@ -23,7 +25,9 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	if validateErr := url.Validate(); validateErr != nil {
 		return nil, validateErr
 	}
-	url.TinyURL = "https://tinyurl.com/" + cryptoutils.GetHash(url.UserID + url.OriginalURL)[:6]
+	//url.TinyURL = "https://tinyurl.com/" + cryptoutils.GetHash(url.UserID + url.OriginalURL)[:6]
+	url.TinyURL = "https://tinyurl.com/" + getID()
+	fmt.Println(url.TinyURL)
 	url.CreationDate = dateutils.GetNow()
 	url.ExpirationDate = dateutils.GetExpiry()
 	err := url.Save()
@@ -54,4 +58,17 @@ func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
 		return delErr
 	}
 	return nil
+}
+
+func getID() string {
+	node, err := snowflake.NewNode(1)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	// Generate a snowflake ID.
+	id := node.Generate()
+	result := id.Base36()[3:]
+	return result
 }

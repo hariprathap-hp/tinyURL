@@ -5,20 +5,22 @@ import (
 	"strconv"
 	"strings"
 	"test3/hariprathap-hp/system_design/TinyURL/dataResources/postgresDB/urls_db"
+	"test3/hariprathap-hp/system_design/tinyURL/logger"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 )
 
 const (
 	indexUniqueUserID = "duplicate key value"
 	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
-	searchQuery       = "select hash,originalurl,creationdate,expirationdate from url where userid=$1"
+	searchQuery       = " hash,originalurl,creationdate,expirationdate from url where userid=$1"
 	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
 )
 
 func (url *Url) Save() *errors.RestErr {
 	stmt, err := urls_db.Client.Prepare(insertQuery)
 	if err != nil {
-		return errors.NewInternalServerError("db query statement creation failed")
+		logger.Error("error while trying to create db statement", err)
+		return errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
@@ -35,7 +37,8 @@ func (url *Url) Save() *errors.RestErr {
 func (url *Url) List() (Urls, *errors.RestErr) {
 	stmt, err := urls_db.Client.Prepare(searchQuery)
 	if err != nil {
-		return nil, errors.NewInternalServerError("db query statement creation failed")
+		logger.Error("error while trying to create db statement", err)
+		return nil, errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
@@ -64,7 +67,8 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 func (url *Url) Delete() *errors.RestErr {
 	stmt, err := urls_db.Client.Prepare(deleteQuery)
 	if err != nil {
-		return errors.NewInternalServerError("db query statement creation failed")
+		logger.Error("error while trying to create db statement", err)
+		return errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
