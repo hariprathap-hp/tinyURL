@@ -25,7 +25,7 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	if validateErr := url.Validate(); validateErr != nil {
 		return nil, validateErr
 	}
-	//url.TinyURL = "https://tinyurl.com/" + cryptoutils.GetHash(url.UserID + url.OriginalURL)[:6]
+
 	url.TinyURL = "https://tinyurl.com/" + getID()
 	fmt.Println(url.TinyURL)
 	url.CreationDate = dateutils.GetNow()

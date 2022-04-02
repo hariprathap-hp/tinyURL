@@ -3,33 +3,24 @@ package tinyurl
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"test3/hariprathap-hp/system_design/TinyURL/dataResources/postgresDB/urls_db"
+	"test3/hariprathap-hp/system_design/tinyURL/dataResources/cassandra"
 	"test3/hariprathap-hp/system_design/tinyURL/logger"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 )
 
 const (
-	indexUniqueUserID = "duplicate key value"
-	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
-	searchQuery       = " hash,originalurl,creationdate,expirationdate from url where userid=$1"
-	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
+	indexUniqueUserID  = "duplicate key value"
+	queryinsertTinyURL = "INSERT into urls (tiny_url, original_url, creation_date, expiration_date, user_id) values (?,?,?,?,?)"
+	querylistAllURLs   = "select "
+	searchQuery        = " hash,originalurl,creationdate,expirationdate from url where user_id=$1"
+	querydeleteTinyURL = "delete from urls where user_id=? and original_url=?"
 )
 
 func (url *Url) Save() *errors.RestErr {
-	stmt, err := urls_db.Client.Prepare(insertQuery)
-	if err != nil {
-		logger.Error("error while trying to create db statement", err)
-		return errors.NewInternalServerError("databse error")
-	}
-	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
-	if _, insertErr := stmt.Exec(url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id); insertErr != nil {
-		if strings.Contains(insertErr.Error(), indexUniqueUserID) {
-			fmt.Println("violates unique constraint")
-			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
-		}
-		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", insertErr.Error()))
+	if err := cassandra.GetSession().Query(queryinsertTinyURL, url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id).Exec(); err != nil {
+		return errors.NewInternalServerError(err.Error())
 	}
 	return nil
 }
@@ -65,20 +56,10 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 }
 
 func (url *Url) Delete() *errors.RestErr {
-	stmt, err := urls_db.Client.Prepare(deleteQuery)
-	if err != nil {
-		logger.Error("error while trying to create db statement", err)
-		return errors.NewInternalServerError("databse error")
-	}
-	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
-	if _, deleteErr := stmt.Exec(user_id, url.OriginalURL); deleteErr != nil {
-		if strings.Contains(deleteErr.Error(), indexUniqueUserID) {
-			fmt.Println("violates unique constraint")
-			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
-		}
-		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", deleteErr.Error()))
+	if err := cassandra.GetSession().Query(querydeleteTinyURL, user_id, url.OriginalURL).Exec(); err != nil {
+		fmt.Println(err)
+		return errors.NewInternalServerError(err.Error())
 	}
-
 	return nil
 }

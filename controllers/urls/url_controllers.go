@@ -40,6 +40,7 @@ func Delete(c *gin.Context) {
 	delErr := services.UrlServices.DeleteURL(url)
 	if delErr != nil {
 		c.JSON(delErr.Status, delErr)
+		return
 	}
 	c.String(http.StatusOK, "Url Deleted")
 }
