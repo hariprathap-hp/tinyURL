@@ -1,16 +1,22 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
+	"test3/github.com/mercadolibre/golang-restclient/rest"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/dateutils"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
-
-	"github.com/bwmarrin/snowflake"
+	"time"
 )
 
 var (
-	UrlServices urlServicesInterface = &urlService{}
+	UrlServices   urlServicesInterface = &urlService{}
+	kgsRestClient                      = rest.RequestBuilder{
+		BaseURL: "http://localhost:8085",
+		Timeout: 100 * time.Millisecond,
+	}
 )
 
 type urlService struct{}
@@ -26,11 +32,15 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 		return nil, validateErr
 	}
 
-	url.TinyURL = "https://tinyurl.com/" + getID()
-	fmt.Println(url.TinyURL)
+	key, err := getID()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(strings.Trim(*key, "\""))
+	url.TinyURL = "https://tinyurl.com/" + strings.Trim(*key, "\"")
 	url.CreationDate = dateutils.GetNow()
 	url.ExpirationDate = dateutils.GetExpiry()
-	err := url.Save()
+	err = url.Save()
 
 	if err != nil {
 		return nil, err
@@ -60,15 +70,20 @@ func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
 	return nil
 }
 
-func getID() string {
-	node, err := snowflake.NewNode(1)
-	if err != nil {
-		fmt.Println(err)
-		return ""
+func getID() (*string, *errors.RestErr) {
+	fmt.Println("Inside GET ID function")
+	response := kgsRestClient.Get("/getkey")
+	if response == nil || response.Response == nil {
+		return nil, errors.NewInternalServerError("invalid rest client response when trying to fetch keys from kgs store")
 	}
-
-	// Generate a snowflake ID.
-	id := node.Generate()
-	result := id.Base36()[3:]
-	return result
+	if response.StatusCode > 299 {
+		var restErr errors.RestErr
+		err := json.Unmarshal(response.Bytes(), &restErr)
+		if err != nil {
+			return nil, errors.NewInternalServerError("Invalid error interface while trying to get key")
+		}
+		return nil, &restErr
+	}
+	result := string(response.Bytes())
+	return &result, nil
 }
