@@ -3,56 +3,82 @@ package tinyurl
 import (
 	"fmt"
 	"strconv"
-	"test3/hariprathap-hp/system_design/tinyURL/dataResources/cassandra"
+	"strings"
+	"test3/hariprathap-hp/system_design/TinyURL/dataResources/postgresDB/urls_db"
+	"test3/hariprathap-hp/system_design/tinyURL/logger"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
-	"time"
 )
 
 const (
-	queryinsertTinyURL = "INSERT into urls (tiny_url, original_url, creation_date, expiration_date, user_id) values (?,?,?,?,?)"
-	querylistAllURLs   = "select tiny_url, original_url, creation_date, expiration_date from urls where user_id=? ALLOW FILTERING"
-	querydeleteTinyURL = "delete from urls where user_id=? and original_url=?"
+	indexUniqueUserID = "duplicate key value"
+	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
+	searchQuery       = " hash,originalurl,creationdate,expirationdate from url where userid=$1"
+	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
 )
 
 func (url *Url) Save() *errors.RestErr {
+	stmt, err := urls_db.Client.Prepare(insertQuery)
+	if err != nil {
+		logger.Error("error while trying to create db statement", err)
+		return errors.NewInternalServerError("databse error")
+	}
+	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
-	if err := cassandra.GetSession().Query(queryinsertTinyURL, url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id).Exec(); err != nil {
-		return errors.NewInternalServerError(err.Error())
+	if _, insertErr := stmt.Exec(url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id); insertErr != nil {
+		if strings.Contains(insertErr.Error(), indexUniqueUserID) {
+			fmt.Println("violates unique constraint")
+			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
+		}
+		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", insertErr.Error()))
 	}
 	return nil
 }
 
 func (url *Url) List() (Urls, *errors.RestErr) {
-
+	stmt, err := urls_db.Client.Prepare(searchQuery)
+	if err != nil {
+		logger.Error("error while trying to create db statement", err)
+		return nil, errors.NewInternalServerError("databse error")
+	}
+	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
-	fmt.Println("user_id list is --", user_id)
 
-	var results Urls
-	m := map[string]interface{}{}
-
-	iter := cassandra.GetSession().Query(querylistAllURLs, user_id).Iter()
-
-	for iter.MapScan(m) {
-		results = append(results, Url{
-			TinyURL:        m["tiny_url"].(string),
-			OriginalURL:    m["original_url"].(string),
-			CreationDate:   m["creation_date"].(time.Time),
-			ExpirationDate: m["expiration_date"].(time.Time),
-		})
-		m = map[string]interface{}{}
+	rows, searchErr := stmt.Query(user_id)
+	if searchErr != nil {
+		fmt.Println(searchErr)
+		return nil, errors.NewInternalServerError("fetching users from database failed")
 	}
-	if err := iter.Close(); err != nil {
-		fmt.Println(err.Error())
-		return nil, errors.NewInternalServerError(err.Error())
+	defer rows.Close()
+
+	results := make([]Url, 0)
+	for rows.Next() {
+		var res Url
+		scanErr := rows.Scan(&res.TinyURL, &res.OriginalURL,
+			&res.CreationDate, &res.ExpirationDate)
+		if scanErr != nil {
+			return nil, errors.NewInternalServerError("failed during scanning result rows")
+		}
+		results = append(results, res)
 	}
+
 	return results, nil
 }
 
 func (url *Url) Delete() *errors.RestErr {
-	user_id, _ := strconv.Atoi(url.UserID)
-	if err := cassandra.GetSession().Query(querydeleteTinyURL, user_id, url.OriginalURL).Exec(); err != nil {
-		fmt.Println(err)
-		return errors.NewInternalServerError(err.Error())
+	stmt, err := urls_db.Client.Prepare(deleteQuery)
+	if err != nil {
+		logger.Error("error while trying to create db statement", err)
+		return errors.NewInternalServerError("databse error")
 	}
+	defer stmt.Close()
+	user_id, _ := strconv.Atoi(url.UserID)
+	if _, deleteErr := stmt.Exec(user_id, url.OriginalURL); deleteErr != nil {
+		if strings.Contains(deleteErr.Error(), indexUniqueUserID) {
+			fmt.Println("violates unique constraint")
+			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
+		}
+		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", deleteErr.Error()))
+	}
+
 	return nil
 }
