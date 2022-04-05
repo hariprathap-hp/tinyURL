@@ -8,6 +8,7 @@ import (
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/dateutils"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 	"time"
 )
 
@@ -29,9 +30,10 @@ type urlServicesInterface interface {
 
 func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) {
 	if validateErr := url.Validate(); validateErr != nil {
+		zlogger.Error("url_service: func create(), validation of user input failed with error - ", errors.NewError(validateErr.Error))
 		return nil, validateErr
 	}
-
+	zlogger.Info("url_service: func create(), creating a new tinyurl for the user " + url.UserID + " and url - " + url.OriginalURL)
 	key, err := getID()
 	if err != nil {
 		return nil, err
