@@ -12,7 +12,7 @@ import (
 const (
 	indexUniqueUserID = "duplicate key value"
 	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
-	searchQuery       = " hash,originalurl,creationdate,expirationdate from url where userid=$1"
+	searchQuery       = "select hash,originalurl,creationdate,expirationdate from url where userid=$1"
 	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
 )
 
@@ -35,6 +35,7 @@ func (url *Url) Save() *errors.RestErr {
 }
 
 func (url *Url) List() (Urls, *errors.RestErr) {
+	fmt.Println("Inside List URLs")
 	stmt, err := urls_db.Client.Prepare(searchQuery)
 	if err != nil {
 		logger.Error("error while trying to create db statement", err)
@@ -42,7 +43,7 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 	}
 	defer stmt.Close()
 	user_id, _ := strconv.Atoi(url.UserID)
-
+	fmt.Println(user_id)
 	rows, searchErr := stmt.Query(user_id)
 	if searchErr != nil {
 		fmt.Println(searchErr)
@@ -60,7 +61,7 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 		}
 		results = append(results, res)
 	}
-
+	fmt.Println(results)
 	return results, nil
 }
 

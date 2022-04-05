@@ -49,6 +49,7 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 }
 
 func (u *urlService) GetURL(id string) (tinyurl.Urls, *errors.RestErr) {
+	fmt.Println("Inside GetURL")
 	url := tinyurl.Url{
 		UserID: id,
 	}

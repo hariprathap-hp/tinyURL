@@ -1,7 +1,7 @@
 package app
 
 import (
-	"test3/hariprathap-hp/system_design/tinyURL/logger"
+	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +12,7 @@ var (
 
 func StartApp() {
 	mapURLs()
-	logger.Info("About to start the application...")
+	zlogger.Info("About to start the application...")
 	router.LoadHTMLFiles("templates/index.html")
 	router.Run(":8080")
 }
