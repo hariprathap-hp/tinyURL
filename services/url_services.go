@@ -16,7 +16,7 @@ var (
 	UrlServices   urlServicesInterface = &urlService{}
 	kgsRestClient                      = rest.RequestBuilder{
 		BaseURL: "http://localhost:8085",
-		Timeout: 100 * time.Millisecond,
+		Timeout: 100 * time.Second,
 	}
 )
 
@@ -74,7 +74,6 @@ func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
 }
 
 func getID() (*string, *errors.RestErr) {
-	fmt.Println("Inside GET ID function")
 	response := kgsRestClient.Get("/getkey")
 	if response == nil || response.Response == nil {
 		return nil, errors.NewInternalServerError("invalid rest client response when trying to fetch keys from kgs store")

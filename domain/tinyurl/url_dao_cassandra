@@ -9,14 +9,13 @@ import (
 )
 
 const (
-	queryinsertTinyURL = "INSERT into urls (tiny_url, original_url, creation_date, expiration_date, user_id) values (?,?,?,?,?)"
+	queryinsertTinyURL = "INSERT into urls (tiny_url, original_url, creation_date, expiration_date, user_id) values (?,?,?,?,?) IF NOT EXISTS"
 	querylistAllURLs   = "select tiny_url, original_url, creation_date, expiration_date from urls where user_id=? ALLOW FILTERING"
 	querydeleteTinyURL = "delete from urls where user_id=? and original_url=?"
 )
 
 func (url *Url) Save() *errors.RestErr {
 	user_id, _ := strconv.Atoi(url.UserID)
-
 	if err := cassandra.GetSession().Query(queryinsertTinyURL, url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id).Exec(); err != nil {
 		return errors.NewInternalServerError(err.Error())
 	}
