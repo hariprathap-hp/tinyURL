@@ -6,6 +6,7 @@ import (
 	"strings"
 	"test3/github.com/mercadolibre/golang-restclient/rest"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
+	services "test3/hariprathap-hp/system_design/tinyURL/services/cache"
 	"test3/hariprathap-hp/system_design/utils_repo/dateutils"
 	"test3/hariprathap-hp/system_design/utils_repo/errors"
 	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
@@ -74,18 +75,31 @@ func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
 }
 
 func getID() (*string, *errors.RestErr) {
-	response := kgsRestClient.Get("/getkey")
-	if response == nil || response.Response == nil {
-		return nil, errors.NewInternalServerError("invalid rest client response when trying to fetch keys from kgs store")
-	}
-	if response.StatusCode > 299 {
-		var restErr errors.RestErr
-		err := json.Unmarshal(response.Bytes(), &restErr)
-		if err != nil {
-			return nil, errors.NewInternalServerError("Invalid error interface while trying to get key")
+	zlogger.Info("url_Services : func getID(), trying to fetch the key present in the cache of app services")
+	for {
+		if res := services.KeyService.Get(); res != "" {
+			zlogger.Info("url_Services : func getID(), unique key successfully found in local cache")
+			return &res, nil
 		}
-		return nil, &restErr
+		zlogger.Info("url_Services : func getID(), key is not present in cache, an internal API call is made to fetch key from kgs services")
+		response := kgsRestClient.Get("/getkey")
+		if response == nil || response.Response == nil {
+			return nil, errors.NewInternalServerError("invalid rest client response when trying to fetch keys from kgs store")
+		}
+		if response.StatusCode > 299 {
+			var restErr errors.RestErr
+			err := json.Unmarshal(response.Bytes(), &restErr)
+			if err != nil {
+				return nil, errors.NewInternalServerError("Invalid error interface while trying to get key")
+			}
+			return nil, &restErr
+		}
+		zlogger.Info("url_Services : func getID(), returning the key received from the kgs services")
+		trimResult(response.Bytes())
 	}
-	result := string(response.Bytes())
-	return &result, nil
+
+}
+
+func trimResult(inp []byte) []string {
+	return nil
 }

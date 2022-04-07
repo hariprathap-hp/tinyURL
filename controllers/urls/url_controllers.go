@@ -3,7 +3,7 @@ package urls
 import (
 	"net/http"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
-	"test3/hariprathap-hp/system_design/tinyURL/services"
+	services "test3/hariprathap-hp/system_design/tinyURL/services/url_services"
 	"test3/hariprathap-hp/system_design/utils_repo/errors"
 	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 
