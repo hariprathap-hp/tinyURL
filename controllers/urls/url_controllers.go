@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
 	"test3/hariprathap-hp/system_design/tinyURL/services"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 
 	"github.com/gin-gonic/gin"

@@ -3,7 +3,7 @@ package tinyurl
 import (
 	"strconv"
 	"strings"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 	"time"
 )
 

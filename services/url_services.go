@@ -6,8 +6,8 @@ import (
 	"strings"
 	"test3/github.com/mercadolibre/golang-restclient/rest"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/dateutils"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/utils_repo/dateutils"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 	"time"
 )

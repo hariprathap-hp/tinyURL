@@ -6,7 +6,7 @@ import (
 	"strings"
 	"test3/hariprathap-hp/system_design/TinyURL/dataResources/postgresDB/urls_db"
 	"test3/hariprathap-hp/system_design/tinyURL/logger"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 )
 
 const (
