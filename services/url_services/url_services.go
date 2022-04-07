@@ -46,6 +46,9 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	err = url.Save()
 
 	if err != nil {
+		if strings.Contains(err.Message, "already exists") {
+			services.KeyService.SetKey(*key)
+		}
 		return nil, err
 	}
 	return &url, nil
@@ -78,7 +81,6 @@ func getID() (*string, *errors.RestErr) {
 	zlogger.Info("url_Services : func getID(), trying to fetch the key present in the cache of app services")
 	for {
 		if res := services.KeyService.Get(); res != "" {
-			fmt.Println("Finally got the key -- ", res)
 			zlogger.Info("url_Services : func getID(), unique key successfully found in local cache")
 			return &res, nil
 		}

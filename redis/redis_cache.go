@@ -33,6 +33,11 @@ func (cache *redisCache) Set(keys []string) {
 	client.LPush("urlapp_cache", keys)
 }
 
+func (cache *redisCache) SetKey(key string) {
+	client := cache.getClient()
+	client.LPush("urlapp_cache", key)
+}
+
 func (cache *redisCache) Get() string {
 	client := cache.getClient()
 	key := client.LPop("urlapp_cache")

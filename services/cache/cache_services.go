@@ -19,6 +19,7 @@ type keyservices struct{}
 type keyServicesInterface interface {
 	Get() string
 	Set([]string)
+	SetKey(string)
 }
 
 func (ks *keyservices) Get() string {
@@ -28,4 +29,8 @@ func (ks *keyservices) Get() string {
 
 func (ks *keyservices) Set(keys []string) {
 	app_cache.Set(keys)
+}
+
+func (ks *keyservices) SetKey(key string) {
+	app_cache.SetKey(key)
 }
