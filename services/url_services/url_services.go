@@ -78,6 +78,7 @@ func getID() (*string, *errors.RestErr) {
 	zlogger.Info("url_Services : func getID(), trying to fetch the key present in the cache of app services")
 	for {
 		if res := services.KeyService.Get(); res != "" {
+			fmt.Println("Finally got the key -- ", res)
 			zlogger.Info("url_Services : func getID(), unique key successfully found in local cache")
 			return &res, nil
 		}
@@ -95,11 +96,15 @@ func getID() (*string, *errors.RestErr) {
 			return nil, &restErr
 		}
 		zlogger.Info("url_Services : func getID(), returning the key received from the kgs services")
-		trimResult(response.Bytes())
+		keys := trimResult(response.Bytes())
+		services.KeyService.Set(keys)
 	}
 
 }
 
 func trimResult(inp []byte) []string {
-	return nil
+	res := string(inp)
+	res = strings.TrimSuffix(res, "]")
+	res = strings.TrimPrefix(res, "[")
+	return strings.Split(res, ",")
 }

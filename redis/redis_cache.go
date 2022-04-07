@@ -1,7 +1,6 @@
 package appcache
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -22,7 +21,6 @@ func NewRedisCache(host string, db int, exp time.Duration) APPcache {
 }
 
 func (cache *redisCache) getClient() *redis.Client {
-	fmt.Println("Host is -- ", cache.host)
 	return redis.NewClient(&redis.Options{
 		Addr:     cache.host,
 		Password: "",
@@ -32,7 +30,6 @@ func (cache *redisCache) getClient() *redis.Client {
 
 func (cache *redisCache) Set(keys []string) {
 	client := cache.getClient()
-	fmt.Println("Setting Keys in a Redis List")
 	client.LPush("urlapp_cache", keys)
 }
 

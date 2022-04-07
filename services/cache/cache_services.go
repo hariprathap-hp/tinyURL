@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	appcache "test3/hariprathap-hp/system_design/tinyURL/redis"
 )
 
@@ -23,7 +22,6 @@ type keyServicesInterface interface {
 }
 
 func (ks *keyservices) Get() string {
-	fmt.Println("Inside local cache GET -- ")
 	key := app_cache.Get()
 	return key
 }
