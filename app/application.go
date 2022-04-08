@@ -12,7 +12,6 @@ var (
 
 func StartApp() {
 	mapURLs()
-	zlogger.Info("About to start the application...")
-	router.LoadHTMLFiles("templates/index.html")
+	zlogger.Info("About to start tinyurl service...")
 	router.Run(":8080")
 }

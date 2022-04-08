@@ -19,7 +19,6 @@ func Create(c *gin.Context) {
 		c.JSON(restError.Status, restError)
 		return
 	}
-	zlogger.Info("url_controller: func create(), creating a new tinyurl for the user " + url.UserID + " and url - " + url.OriginalURL)
 	result, createErr := services.UrlServices.CreateURL(url)
 	if createErr != nil {
 		zlogger.Error("url_controller: func create(), creation of tinyurl failed with error ", errors.NewError(createErr.Error))
@@ -51,22 +50,22 @@ func Delete(c *gin.Context) {
 	c.String(http.StatusOK, "Url Deleted")
 }
 
-func List(c *gin.Context) {
+func ListURLs(c *gin.Context) {
 	var url tinyurl.Url
 
 	//we can use shouldBindJson instead of json.Marshal
 	if err := c.ShouldBindJSON(&url); err != nil {
-		zlogger.Error("url_controller: func list(), json binding of user input failed with error ", err)
+		zlogger.Error("url_controller: func list(), json binding of user input failed with error : ", err)
 		restError := errors.NewBadRequestError("Bad JSON Request")
 		c.JSON(restError.Status, restError)
 		return
 	}
-	result, listErr := services.UrlServices.GetURL(url.UserID)
+	result, listErr := services.UrlServices.ListURL(url.UserID)
 	if listErr != nil {
-		zlogger.Error("url_controller: func list(), listing of urls for the users failed with error ", errors.NewError(listErr.Error))
+		zlogger.Error("url_controller: func list(), listing of urls for the user failed with error : ", errors.NewError(listErr.Error))
 		c.JSON(listErr.Status, listErr)
 		return
 	}
-	zlogger.Info("url_controller: func list(), deletion of user url succeeded")
+	zlogger.Info("url_controller: func list(), successfully listing all the urls for the user")
 	c.JSON(http.StatusCreated, result)
 }

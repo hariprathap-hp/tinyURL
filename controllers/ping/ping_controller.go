@@ -8,6 +8,6 @@ import (
 )
 
 func PingHandler(c *gin.Context) {
-	zlogger.Info("testing ping on the server")
+	zlogger.Info("testing ping on the tinyurl server")
 	c.String(http.StatusOK, "pong")
 }

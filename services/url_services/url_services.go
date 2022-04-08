@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"test3/github.com/mercadolibre/golang-restclient/rest"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
@@ -25,7 +24,7 @@ type urlService struct{}
 
 type urlServicesInterface interface {
 	CreateURL(tinyurl.Url) (*tinyurl.Url, *errors.RestErr)
-	GetURL(string) (tinyurl.Urls, *errors.RestErr)
+	ListURL(string) (tinyurl.Urls, *errors.RestErr)
 	DeleteURL(tinyurl.Url) *errors.RestErr
 }
 
@@ -39,7 +38,6 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(strings.Trim(*key, "\""))
 	url.TinyURL = "https://tinyurl.com/" + strings.Trim(*key, "\"")
 	url.CreationDate = dateutils.GetNow()
 	url.ExpirationDate = dateutils.GetExpiry()
@@ -54,15 +52,16 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	return &url, nil
 }
 
-func (u *urlService) GetURL(id string) (tinyurl.Urls, *errors.RestErr) {
-	fmt.Println("Inside GetURL")
+func (u *urlService) ListURL(id string) (tinyurl.Urls, *errors.RestErr) {
 	url := tinyurl.Url{
 		UserID: id,
 	}
 	result, getErr := url.List()
 	if getErr != nil {
+		zlogger.Error("url_service: func listurl(), listing of urls failed with error : ", errors.NewError(getErr.Error))
 		return nil, getErr
 	}
+	zlogger.Info("url_service: func listurl(), returning the list of urls back to the controller")
 	return result, nil
 }
 

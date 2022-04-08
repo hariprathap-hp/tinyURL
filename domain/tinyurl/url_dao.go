@@ -2,11 +2,10 @@ package tinyurl
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"test3/hariprathap-hp/system_design/TinyURL/dataResources/postgresDB/urls_db"
-	"test3/hariprathap-hp/system_design/tinyURL/logger"
 	"test3/hariprathap-hp/system_design/utils_repo/errors"
+	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 )
 
 const (
@@ -19,34 +18,34 @@ const (
 func (url *Url) Save() *errors.RestErr {
 	stmt, err := urls_db.Client.Prepare(insertQuery)
 	if err != nil {
-		logger.Error("error while trying to create db statement", err)
+		zlogger.Error("url_dao: func save(), db statement preparation failed with error : ", errors.NewError(err.Error()))
 		return errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
-	user_id, _ := strconv.Atoi(url.UserID)
-	if _, insertErr := stmt.Exec(url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, user_id); insertErr != nil {
+	//user_id, _ := strconv.Atoi(url.UserID)
+	if _, insertErr := stmt.Exec(url.TinyURL, url.OriginalURL, url.CreationDate, url.ExpirationDate, url.UserID); insertErr != nil {
 		if strings.Contains(insertErr.Error(), indexUniqueUserID) {
-			fmt.Println("violates unique constraint")
+			zlogger.Error("url_dao: func save(), db statement preparation failed with error : ", errors.NewError("user already exists in db"))
 			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
 		}
+		zlogger.Error("url_dao: func save(), creation of url in db failed with error : ", errors.NewError(insertErr.Error()))
 		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", insertErr.Error()))
 	}
+	zlogger.Info("url_dao: func save(), url is successfully created and saved in db")
 	return nil
 }
 
 func (url *Url) List() (Urls, *errors.RestErr) {
-	fmt.Println("Inside List URLs")
 	stmt, err := urls_db.Client.Prepare(searchQuery)
 	if err != nil {
-		logger.Error("error while trying to create db statement", err)
+		zlogger.Error("url_dao: func list(), db statement preparation failed with error : ", errors.NewError(err.Error()))
 		return nil, errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
-	user_id, _ := strconv.Atoi(url.UserID)
-	fmt.Println(user_id)
-	rows, searchErr := stmt.Query(user_id)
+	//user_id, _ := strconv.Atoi(url.UserID)
+	rows, searchErr := stmt.Query(url.UserID)
 	if searchErr != nil {
-		fmt.Println(searchErr)
+		zlogger.Error("url_dao: func list(), fetching the list of urls from db failed with error : ", errors.NewError(searchErr.Error()))
 		return nil, errors.NewInternalServerError("fetching users from database failed")
 	}
 	defer rows.Close()
@@ -57,23 +56,23 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 		scanErr := rows.Scan(&res.TinyURL, &res.OriginalURL,
 			&res.CreationDate, &res.ExpirationDate)
 		if scanErr != nil {
+			zlogger.Error("url_dao: func list(), scanning of results into url objects failed with error : ", errors.NewError(scanErr.Error()))
 			return nil, errors.NewInternalServerError("failed during scanning result rows")
 		}
 		results = append(results, res)
 	}
-	fmt.Println(results)
+	zlogger.Info("url_dao: func list(), list of urls successfully fetched from db")
 	return results, nil
 }
 
 func (url *Url) Delete() *errors.RestErr {
 	stmt, err := urls_db.Client.Prepare(deleteQuery)
 	if err != nil {
-		logger.Error("error while trying to create db statement", err)
 		return errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
-	user_id, _ := strconv.Atoi(url.UserID)
-	if _, deleteErr := stmt.Exec(user_id, url.OriginalURL); deleteErr != nil {
+	//user_id, _ := strconv.Atoi(url.UserID)
+	if _, deleteErr := stmt.Exec(url.UserID, url.OriginalURL); deleteErr != nil {
 		if strings.Contains(deleteErr.Error(), indexUniqueUserID) {
 			fmt.Println("violates unique constraint")
 			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
