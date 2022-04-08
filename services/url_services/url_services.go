@@ -71,8 +71,10 @@ func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
 	}
 	delErr := url.Delete()
 	if delErr != nil {
+		zlogger.Error("url_service: func deleteurl(), deletion of url failed with error : ", errors.NewError(delErr.Error))
 		return delErr
 	}
+	zlogger.Info("url_service: func deleteurl(), deletion of url successful")
 	return nil
 }
 

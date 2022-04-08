@@ -73,10 +73,7 @@ func (url *Url) Delete() *errors.RestErr {
 	defer stmt.Close()
 	//user_id, _ := strconv.Atoi(url.UserID)
 	if _, deleteErr := stmt.Exec(url.UserID, url.OriginalURL); deleteErr != nil {
-		if strings.Contains(deleteErr.Error(), indexUniqueUserID) {
-			fmt.Println("violates unique constraint")
-			return errors.NewInternalServerError(fmt.Sprintf("user %s already exists", url.UserID))
-		}
+		zlogger.Error("url_dao: func delete(), deleting url from db failed with error : ", deleteErr)
 		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", deleteErr.Error()))
 	}
 

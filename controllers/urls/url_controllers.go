@@ -46,7 +46,7 @@ func Delete(c *gin.Context) {
 		c.JSON(delErr.Status, delErr)
 		return
 	}
-	zlogger.Info("url_controller: func create(), deletion of user url succeeded")
+	zlogger.Info("url_controller: func delete(), deletion of user url succeeded")
 	c.String(http.StatusOK, "Url Deleted")
 }
 
