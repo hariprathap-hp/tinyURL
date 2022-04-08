@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"test3/github.com/mercadolibre/golang-restclient/rest"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
@@ -34,18 +35,19 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 		return nil, validateErr
 	}
 	zlogger.Info("url_service: func create(), creating a new tinyurl for the user " + url.UserID + " and url - " + url.OriginalURL)
-	key, err := getID()
+
+	key, err := populateURL(&url)
+	fmt.Println("TinyURL is -- ", url.TinyURL)
 	if err != nil {
+		zlogger.Error("url_service: func create(), error while populating url for insertions", errors.NewError(err.Error))
 		return nil, err
 	}
-	url.TinyURL = "https://tinyurl.com/" + strings.Trim(*key, "\"")
-	url.CreationDate = dateutils.GetNow()
-	url.ExpirationDate = dateutils.GetExpiry()
 	err = url.Save()
 
 	if err != nil {
 		if strings.Contains(err.Message, "already exists") {
-			services.KeyService.SetKey(*key)
+			zlogger.Info("url_service: func create(), pushing the key back to the cache as the url already exists")
+			services.KeyService.SetKey(key)
 		}
 		return nil, err
 	}
@@ -110,4 +112,16 @@ func trimResult(inp []byte) []string {
 	res = strings.TrimSuffix(res, "]")
 	res = strings.TrimPrefix(res, "[")
 	return strings.Split(res, ",")
+}
+
+func populateURL(url *tinyurl.Url) (string, *errors.RestErr) {
+	zlogger.Info("url_service: func populate(),populating url with values for insertion")
+	key, err := getID()
+	if err != nil {
+		return "", err
+	}
+	url.TinyURL = "https://tinyurl.com/" + strings.Trim(*key, "\"")
+	url.CreationDate = dateutils.GetNow()
+	url.ExpirationDate = dateutils.GetExpiry()
+	return *key, nil
 }
