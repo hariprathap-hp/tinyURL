@@ -16,7 +16,7 @@ import (
 var (
 	UrlServices   urlServicesInterface = &urlService{}
 	kgsRestClient                      = rest.RequestBuilder{
-		BaseURL: "http://localhost:8085",
+		BaseURL: "http://localhost:8081",
 		Timeout: 100 * time.Second,
 	}
 )
