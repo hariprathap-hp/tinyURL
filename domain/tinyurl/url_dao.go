@@ -11,8 +11,9 @@ import (
 const (
 	indexUniqueUserID = "duplicate key value"
 	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
-	searchQuery       = "select hash,originalurl,creationdate,expirationdate from url where userid=$1"
+	searchQuery       = "select originalurl, hash from url where userid=$1"
 	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
+	getredirectQuery  = "select originalurl from url where userid=$1 and hash=$2"
 )
 
 func (url *Url) Save() *errors.RestErr {
@@ -35,7 +36,7 @@ func (url *Url) Save() *errors.RestErr {
 	return nil
 }
 
-func (url *Url) List() (Urls, *errors.RestErr) {
+func (url *Url) List() (UrlsList, *errors.RestErr) {
 	stmt, err := urls_db.Client.Prepare(searchQuery)
 	if err != nil {
 		zlogger.Error("url_dao: func list(), db statement preparation failed with error : ", errors.NewError(err.Error()))
@@ -50,11 +51,10 @@ func (url *Url) List() (Urls, *errors.RestErr) {
 	}
 	defer rows.Close()
 
-	results := make([]Url, 0)
+	results := make([]UrlList, 0)
 	for rows.Next() {
-		var res Url
-		scanErr := rows.Scan(&res.TinyURL, &res.OriginalURL,
-			&res.CreationDate, &res.ExpirationDate)
+		var res UrlList
+		scanErr := rows.Scan(&res.OriginalURL, &res.TinyURL)
 		if scanErr != nil {
 			zlogger.Error("url_dao: func list(), scanning of results into url objects failed with error : ", errors.NewError(scanErr.Error()))
 			return nil, errors.NewInternalServerError("failed during scanning result rows")
@@ -78,4 +78,21 @@ func (url *Url) Delete() *errors.RestErr {
 	}
 
 	return nil
+}
+
+func (url *Url) Get() (*string, *errors.RestErr) {
+	stmt, err := urls_db.Client.Prepare(getredirectQuery)
+	if err != nil {
+		return nil, errors.NewInternalServerError("databse error")
+	}
+	defer stmt.Close()
+	res := stmt.QueryRow(url.UserID, url.TinyURL)
+	var result string
+	scanErr := res.Scan(&result)
+	if scanErr != nil {
+		zlogger.Error("url_dao: func Get(), fetching tinyurl from db failed with error : ", scanErr)
+		return nil, errors.NewInternalServerError(fmt.Sprintf("error while trying to fetch tinyurl : %s", scanErr.Error()))
+	}
+	fmt.Println(result)
+	return &result, nil
 }

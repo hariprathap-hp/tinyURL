@@ -14,11 +14,29 @@ type Url struct {
 	UserID         string    `json:"user_id"`
 }
 
+type UrlList struct {
+	TinyURL     string `json:"tinyURL"`
+	OriginalURL string `json:"url"`
+}
+
 type Urls []Url
+type UrlsList []UrlList
 
 func (url *Url) Validate() *errors.RestErr {
 	url.OriginalURL = strings.TrimSpace(strings.ToLower(url.OriginalURL))
 	if url.OriginalURL == "" {
+		return errors.NewBadRequestError("Invalid URL Input")
+	}
+	url.UserID = strings.TrimSpace(strings.ToLower(url.UserID))
+	if url.UserID == "" {
+		return errors.NewBadRequestError("Invalid User ID, UserID can't be empty")
+	}
+	return nil
+}
+
+func (url *Url) ValidateRedirect() *errors.RestErr {
+	url.TinyURL = strings.TrimSpace(strings.ToLower(url.TinyURL))
+	if url.TinyURL == "" {
 		return errors.NewBadRequestError("Invalid URL Input")
 	}
 	url.UserID = strings.TrimSpace(strings.ToLower(url.UserID))

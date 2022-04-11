@@ -25,8 +25,9 @@ type urlService struct{}
 
 type urlServicesInterface interface {
 	CreateURL(tinyurl.Url) (*tinyurl.Url, *errors.RestErr)
-	ListURL(string) (tinyurl.Urls, *errors.RestErr)
+	ListURL(string) (tinyurl.UrlsList, *errors.RestErr)
 	DeleteURL(tinyurl.Url) *errors.RestErr
+	Redirect(tinyurl.Url) (*string, *errors.RestErr)
 }
 
 func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) {
@@ -54,7 +55,7 @@ func (u *urlService) CreateURL(url tinyurl.Url) (*tinyurl.Url, *errors.RestErr) 
 	return &url, nil
 }
 
-func (u *urlService) ListURL(id string) (tinyurl.Urls, *errors.RestErr) {
+func (u *urlService) ListURL(id string) (tinyurl.UrlsList, *errors.RestErr) {
 	url := tinyurl.Url{
 		UserID: id,
 	}
@@ -124,4 +125,17 @@ func populateURL(url *tinyurl.Url) (string, *errors.RestErr) {
 	url.CreationDate = dateutils.GetNow()
 	url.ExpirationDate = dateutils.GetExpiry()
 	return *key, nil
+}
+
+func (u *urlService) Redirect(url tinyurl.Url) (*string, *errors.RestErr) {
+	if validateErr := url.ValidateRedirect(); validateErr != nil {
+		return nil, validateErr
+	}
+	result, redirectErr := url.Get()
+	if redirectErr != nil {
+		zlogger.Error("url_service: func Redirect(), fetching redirect url failed with error : ", errors.NewError(redirectErr.Error))
+		return nil, redirectErr
+	}
+	zlogger.Info("url_service: func Redirect(), fetching redirect url successful")
+	return result, nil
 }

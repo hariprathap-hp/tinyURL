@@ -6,8 +6,10 @@ import (
 )
 
 func mapURLs() {
+	router.LoadHTMLGlob("templates/*")
 	router.GET("/ping", ping.PingHandler)
 	router.GET("/list", urls.ListURLs)
 	router.POST("/create", urls.Create)
-	router.POST("/delete", urls.Delete)
+	router.GET("/delete", urls.Delete)
+	router.GET("/redirect", urls.RedirectURL)
 }

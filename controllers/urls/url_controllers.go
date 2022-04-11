@@ -67,5 +67,19 @@ func ListURLs(c *gin.Context) {
 		return
 	}
 	zlogger.Info("url_controller: func list(), successfully listing all the urls for the user")
-	c.JSON(http.StatusCreated, result)
+	c.JSON(http.StatusOK, result)
+}
+
+func RedirectURL(c *gin.Context) {
+	var url = tinyurl.Url{
+		TinyURL: c.Request.URL.Query().Get("url"),
+		UserID:  c.Request.URL.Query().Get("user_id"),
+	}
+	res, redirectErr := services.UrlServices.Redirect(url)
+	if redirectErr != nil {
+		zlogger.Error("url_controller: func list(), listing of urls for the user failed with error : ", errors.NewError(redirectErr.Error))
+		c.JSON(redirectErr.Status, redirectErr)
+		return
+	}
+	c.Redirect(http.StatusFound, *res)
 }
