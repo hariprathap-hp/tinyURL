@@ -34,14 +34,10 @@ func (url *Url) Validate() *errors.RestErr {
 	return nil
 }
 
-func (url *Url) ValidateRedirect() *errors.RestErr {
+func (url *Url) ValidateURL() *errors.RestErr {
 	url.TinyURL = strings.TrimSpace(strings.ToLower(url.TinyURL))
 	if url.TinyURL == "" {
 		return errors.NewBadRequestError("Invalid URL Input")
-	}
-	url.UserID = strings.TrimSpace(strings.ToLower(url.UserID))
-	if url.UserID == "" {
-		return errors.NewBadRequestError("Invalid User ID, UserID can't be empty")
 	}
 	return nil
 }

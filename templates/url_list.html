@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TINYURL</title>
+
+<style>
+.button {
+    background-color: #b51616; /* Green */
+    border: none;
+    color: white;
+    padding: 6px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 4px;
+  }
+
+  label {
+        display: inline-block;
+        width: 150px;
+        text-align: center;
+      }
+
+</style>
+
+</head>
+<body style="background-color:rgb(74, 206, 162);">
+    <h1>TINYURL</h1> <br>
+ 
+    <h1>List of urls created by the user </h1>
+    <ul>
+        <form action="/delete" method="get">
+            {{range .}}
+        <li>
+            <b>URL</b> : {{.OriginalURL}} 
+            <b>TinyURL</b> : <a href="{{.OriginalURL}}">{{.TinyURL}}</a>
+           <input type = "hidden" id = "tiny_url" name = "tiny_url" value = "{{.TinyURL}}" />
+            <button class="button">---</button> 
+        </li>
+            {{end}}        
+        </form>
+
+    </ul>
+
+</body>
+
+</html> 

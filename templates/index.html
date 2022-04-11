@@ -1,14 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <h1>Enter the URL you want to shorten</h1>
-    </head>
-    <body>
-        <p1>Tiny URL Shortner</p1>
-        <form action="/list" method="POST">
-            <label for="input">URL To Shorten:</label>
-            <input type="text" id="url" name="url"><br><br>
-            <input type="submit" value="Submit">
-          </form>
-    </body>
-</html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TINYURL</title>
+
+<style>
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  }
+
+  label {
+        display: inline-block;
+        width: 40px;
+        text-align: center;
+      }
+
+ input {
+        display: inline-block;
+        width: 300px;
+        text-align: center;
+      }
+
+</style>
+
+</head>
+<body style="background-color:rgb(74, 206, 162);">
+    <h1>TINYURL</h1> <br>
+ 
+    <h1>Enter your url and mail here for short url</h1>
+
+    <form action="/create" method="post">
+        <label for="long_url">url</label>
+        <input type="text" id="long_url" name="long_url" size="68"><br><br>
+        <label for="user_id">email</label>
+        <input type="text" id="user_id" name="user_id" size="68"><br><br>
+        <button class="button">Submit</button> 
+    </form> 
+
+    <h1>Enter your mail to list all your short urls</h1>
+
+    <form action="/list" method="get">
+        <label for="email">email</label>
+        <input type="text" id="email" name="email" size="68"><br><br>
+        <button class="button">List</button> 
+    </form> 
+
+</body>
+
+</html> 

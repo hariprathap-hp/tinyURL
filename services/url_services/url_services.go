@@ -69,7 +69,7 @@ func (u *urlService) ListURL(id string) (tinyurl.UrlsList, *errors.RestErr) {
 }
 
 func (u *urlService) DeleteURL(url tinyurl.Url) *errors.RestErr {
-	if validateErr := url.Validate(); validateErr != nil {
+	if validateErr := url.ValidateURL(); validateErr != nil {
 		return validateErr
 	}
 	delErr := url.Delete()
@@ -121,14 +121,14 @@ func populateURL(url *tinyurl.Url) (string, *errors.RestErr) {
 	if err != nil {
 		return "", err
 	}
-	url.TinyURL = "https://tinyurl.com/" + strings.Trim(*key, "\"")
+	url.TinyURL = "http://localhost:8080/" + strings.Trim(*key, "\"")
 	url.CreationDate = dateutils.GetNow()
 	url.ExpirationDate = dateutils.GetExpiry()
 	return *key, nil
 }
 
 func (u *urlService) Redirect(url tinyurl.Url) (*string, *errors.RestErr) {
-	if validateErr := url.ValidateRedirect(); validateErr != nil {
+	if validateErr := url.ValidateURL(); validateErr != nil {
 		return nil, validateErr
 	}
 	result, redirectErr := url.Get()

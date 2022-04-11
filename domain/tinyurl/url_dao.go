@@ -12,8 +12,8 @@ const (
 	indexUniqueUserID = "duplicate key value"
 	insertQuery       = "insert into url (hash,originalurl,creationdate,expirationdate,userid) values ($1,$2,$3,$4,$5)"
 	searchQuery       = "select originalurl, hash from url where userid=$1"
-	deleteQuery       = "delete from url where userid=$1 and originalurl=$2"
-	getredirectQuery  = "select originalurl from url where userid=$1 and hash=$2"
+	deleteQuery       = "delete from url where hash=$1"
+	getredirectQuery  = "select originalurl from url where hash=$1"
 )
 
 func (url *Url) Save() *errors.RestErr {
@@ -72,7 +72,7 @@ func (url *Url) Delete() *errors.RestErr {
 	}
 	defer stmt.Close()
 	//user_id, _ := strconv.Atoi(url.UserID)
-	if _, deleteErr := stmt.Exec(url.UserID, url.OriginalURL); deleteErr != nil {
+	if _, deleteErr := stmt.Exec(url.TinyURL); deleteErr != nil {
 		zlogger.Error("url_dao: func delete(), deleting url from db failed with error : ", deleteErr)
 		return errors.NewInternalServerError(fmt.Sprintf("error while trying to save user : %s", deleteErr.Error()))
 	}
@@ -86,7 +86,7 @@ func (url *Url) Get() (*string, *errors.RestErr) {
 		return nil, errors.NewInternalServerError("databse error")
 	}
 	defer stmt.Close()
-	res := stmt.QueryRow(url.UserID, url.TinyURL)
+	res := stmt.QueryRow(url.TinyURL)
 	var result string
 	scanErr := res.Scan(&result)
 	if scanErr != nil {

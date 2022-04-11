@@ -10,15 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func Index(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", "")
+}
+
 func Create(c *gin.Context) {
-	var url tinyurl.Url
-	//we can use shouldBindJson instead of json.Marshal
-	if err := c.ShouldBindJSON(&url); err != nil {
-		zlogger.Error("url_controller: func create(), json binding of user input failed with error ", err)
-		restError := errors.NewBadRequestError("Bad JSON Request")
-		c.JSON(restError.Status, restError)
-		return
+	var url = tinyurl.Url{
+		OriginalURL: c.Request.FormValue("long_url"),
+		UserID:      c.Request.FormValue("user_id"),
 	}
+
 	result, createErr := services.UrlServices.CreateURL(url)
 	if createErr != nil {
 		zlogger.Error("url_controller: func create(), creation of tinyurl failed with error ", errors.NewError(createErr.Error))
@@ -31,15 +32,10 @@ func Create(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
-	var url tinyurl.Url
-
-	//we can use shouldBindJson instead of json.Marshal
-	if err := c.ShouldBindJSON(&url); err != nil {
-		zlogger.Error("url_controller: func delete(), json binding of user input failed with error ", err)
-		restError := errors.NewBadRequestError("Bad JSON Request")
-		c.JSON(restError.Status, restError)
-		return
+	var url = tinyurl.Url{
+		TinyURL: c.Request.URL.Query().Get("tiny_url"),
 	}
+
 	delErr := services.UrlServices.DeleteURL(url)
 	if delErr != nil {
 		zlogger.Error("url_controller: func delete(), creation of tinyurl failed with error ", errors.NewError(delErr.Error))
@@ -51,14 +47,8 @@ func Delete(c *gin.Context) {
 }
 
 func ListURLs(c *gin.Context) {
-	var url tinyurl.Url
-
-	//we can use shouldBindJson instead of json.Marshal
-	if err := c.ShouldBindJSON(&url); err != nil {
-		zlogger.Error("url_controller: func list(), json binding of user input failed with error : ", err)
-		restError := errors.NewBadRequestError("Bad JSON Request")
-		c.JSON(restError.Status, restError)
-		return
+	var url = tinyurl.Url{
+		UserID: c.Request.FormValue("email"),
 	}
 	result, listErr := services.UrlServices.ListURL(url.UserID)
 	if listErr != nil {
@@ -67,13 +57,12 @@ func ListURLs(c *gin.Context) {
 		return
 	}
 	zlogger.Info("url_controller: func list(), successfully listing all the urls for the user")
-	c.JSON(http.StatusOK, result)
+	c.HTML(http.StatusOK, "url_list.html", result)
 }
 
 func RedirectURL(c *gin.Context) {
 	var url = tinyurl.Url{
-		TinyURL: c.Request.URL.Query().Get("url"),
-		UserID:  c.Request.URL.Query().Get("user_id"),
+		TinyURL: c.Request.URL.Query().Get("tiny_url"),
 	}
 	res, redirectErr := services.UrlServices.Redirect(url)
 	if redirectErr != nil {
