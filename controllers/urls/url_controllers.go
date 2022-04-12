@@ -1,6 +1,8 @@
 package urls
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"test3/hariprathap-hp/system_design/tinyURL/domain/tinyurl"
 	services "test3/hariprathap-hp/system_design/tinyURL/services/url_services"
@@ -24,17 +26,20 @@ func Create(c *gin.Context) {
 	if createErr != nil {
 		zlogger.Error("url_controller: func create(), creation of tinyurl failed with error ", errors.NewError(createErr.Error))
 		//Handle user creation error
-		c.JSON(createErr.Status, createErr)
+		c.HTML(http.StatusInternalServerError, "gotocreate.html", createErr)
 		return
 	}
 	zlogger.Info("url_controller: func create(), creation of tinyurl succeeded")
-	c.JSON(http.StatusCreated, result)
+	r, _ := json.MarshalIndent(result, "", "    ")
+	c.HTML(http.StatusCreated, "gotocreate.html", string(r))
 }
 
 func Delete(c *gin.Context) {
+	fmt.Println("going to delete the url")
 	var url = tinyurl.Url{
-		TinyURL: c.Request.URL.Query().Get("tiny_url"),
+		TinyURL: c.Request.URL.Query().Get("url"),
 	}
+	fmt.Println("url to delete is -- ", url)
 
 	delErr := services.UrlServices.DeleteURL(url)
 	if delErr != nil {
@@ -43,7 +48,7 @@ func Delete(c *gin.Context) {
 		return
 	}
 	zlogger.Info("url_controller: func delete(), deletion of user url succeeded")
-	c.String(http.StatusOK, "Url Deleted")
+	c.HTML(http.StatusCreated, "gotocreate.html", "urldeleted")
 }
 
 func ListURLs(c *gin.Context) {

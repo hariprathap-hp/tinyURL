@@ -26,23 +26,43 @@
 
 </head>
 <body style="background-color:rgb(74, 206, 162);">
-    <h1>TINYURL</h1> <br>
+   <!--- <h1>TINYURL</h1> <br>
  
     <h1>List of urls created by the user </h1>
     <ul>
+        {{range .}}
         <form action="/delete" method="get">
-            {{range .}}
+            
         <li>
             <b>URL</b> : {{.OriginalURL}} 
             <b>TinyURL</b> : <a href="{{.OriginalURL}}">{{.TinyURL}}</a>
-           <input type = "hidden" id = "tiny_url" name = "tiny_url" value = "{{.TinyURL}}" />
             <button class="button">---</button> 
         </li>
             {{end}}        
         </form>
-
-    </ul>
-
+    </ul> -->
+    <h1>List of urls created by the user </h1>
+    <table id="myTable">
+        <tbody>
+        {{range .}}
+        <tr>
+            <td><b>URL</b> : {{.OriginalURL}}</td>
+            <td> {{.TinyURL}}</td>
+            <td><input type="button" value="Delete" onclick="deleteRow(this)"></td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+    <script>
+        function deleteRow(r) {
+            var i = r.parentNode.parentNode.rowIndex;
+            var tiny = document.getElementById("myTable").rows[i].cells[1].innerHTML
+            let xhr = new XMLHttpRequest();
+            let del = "http://localhost:8080/delete?url="+tiny
+            xhr.open("GET", del);
+            xhr.send();
+        }
+    </script>
 </body>
 
 </html> 
