@@ -48,7 +48,7 @@ func Delete(c *gin.Context) {
 		return
 	}
 	zlogger.Info("url_controller: func delete(), deletion of user url succeeded")
-	c.HTML(http.StatusCreated, "gotocreate.html", "urldeleted")
+	c.JSON(http.StatusOK, "urldeleted")
 }
 
 func ListURLs(c *gin.Context) {
@@ -67,7 +67,7 @@ func ListURLs(c *gin.Context) {
 
 func RedirectURL(c *gin.Context) {
 	var url = tinyurl.Url{
-		TinyURL: c.Request.URL.Query().Get("tiny_url"),
+		TinyURL: c.Request.URL.Query().Get("url"),
 	}
 	res, redirectErr := services.UrlServices.Redirect(url)
 	if redirectErr != nil {
@@ -75,5 +75,5 @@ func RedirectURL(c *gin.Context) {
 		c.JSON(redirectErr.Status, redirectErr)
 		return
 	}
-	c.Redirect(http.StatusFound, *res)
+	c.Redirect(http.StatusMovedPermanently, *res)
 }

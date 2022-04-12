@@ -56,10 +56,20 @@
     <script>
         function deleteRow(r) {
             var i = r.parentNode.parentNode.rowIndex;
-            var tiny = document.getElementById("myTable").rows[i].cells[1].innerHTML
+           var tiny = document.getElementById("myTable").rows[i].cells[1].innerHTML
             let xhr = new XMLHttpRequest();
             let del = "http://localhost:8080/delete?url="+tiny
+            document.getElementById("myTable").deleteRow(i);
             xhr.open("GET", del);
+            xhr.send();
+        }
+
+        function gotourl(r) {
+            var i = r.parentNode.parentNode.rowIndex;
+            var tiny = document.getElementById("myTable").rows[i].cells[1].innerHTML
+            let xhr = new XMLHttpRequest();
+            let redir = "http://localhost:8080/redirect?url="+tiny
+            xhr.open('GET', redir);
             xhr.send();
         }
     </script>
